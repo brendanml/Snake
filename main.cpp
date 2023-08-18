@@ -27,12 +27,17 @@ class Snake {
     deque<Vector2> body = {Vector2{4,4},Vector2{4,5},Vector2{4,6}};
     Vector2 direction = {1,0};
     bool alive = true;
+    bool eating = false;
     void draw() {
         checkDirection();
         for(int i = 0; i<body.size();i++) { 
             Rectangle rect = Rectangle{(float)body[i].x*cellSize,(float)body[i].y*cellSize,(float)cellSize,(float)cellSize};
             if(alive) {
                 DrawRectangleRounded(rect,.5,3,Color{255,255,255,255});
+                if(i==0 && eating) {
+                    DrawCircle((float)body[i].x*cellSize+(cellSize/4),(float)body[i].y*cellSize+(cellSize/4),3,BLACK);
+                    DrawCircle((float)body[i].x*cellSize+(16),(float)body[i].y*cellSize+(cellSize/4),3,BLACK);
+                }
             } else {
                 DrawRectangleRounded(rect,.5,3,Color{240,93,94,255});
             }
@@ -45,6 +50,7 @@ class Snake {
     void update() {
         body.pop_back();
         body.push_front(Vector2Add(body[0], direction));
+        eating = false;
     }
     void checkDirection() {
         if(IsKeyPressed(KEY_DOWN) && direction.y != -1) {
@@ -71,7 +77,7 @@ class Food {
     Texture texture;
     //constructor for food
     Food() {
-        Image img = LoadImage("../resources/carrot-square.png");
+        Image img = LoadImage("./resources/carrot-square.png");
         texture = LoadTextureFromImage(img);
         UnloadImage(img);
         position = GenerateRandomPos();
@@ -81,7 +87,6 @@ class Food {
         UnloadTexture(texture);
     }
     void draw() {
-
         DrawTexture(texture, cellSize*position.x, cellSize*position.y, WHITE);
     }
     Vector2 GenerateRandomPos() {
@@ -96,21 +101,23 @@ class Game {
     Snake snake = Snake();
     Food food = Food();
 
-
     void draw() {
-        snake.draw();
         food.draw();
+        snake.draw();
     }
     void update() {
-        checkCollision();
         if(snake.alive) {
-            checkEating();
             snake.update();
         }
+    }
+    void check() {
+        checkEating();
+        checkCollision();
     }
     void checkEating() {
         if(Vector2Equals(snake.body[0],food.position)) {
             cout << "eating!" << endl;
+            snake.eating = true;
             food.position = food.GenerateRandomPos();
             Vector2 tail = snake.body[-1];
             Vector2 direction = snake.direction;
@@ -141,6 +148,7 @@ int main() {
         BeginDrawing();
         //without this it would leave trace of ball (redraw)
         ClearBackground((Color){170,246,131,0});
+        game.check();
         if(TimePassed(0.2) && game.snake.alive) {
             game.update(); 
         }
