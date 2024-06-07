@@ -141,7 +141,7 @@ class Game {
 int main() {
     InitWindow(cellSize*cellCount, cellSize*cellCount, "snek");
     SetWindowPosition(200, 200);   
-    SetTargetFPS(60);
+    SetTargetFPS(60); 
 
     Game game = Game();
     while(!WindowShouldClose()) {
